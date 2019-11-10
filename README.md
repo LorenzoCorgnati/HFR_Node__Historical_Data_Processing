@@ -1,5 +1,8 @@
-# HFR_Node_tools
+# HFR_Node__Historical_Data_Processing
 These applications are written in Matlab language and they are based on HFR_Progs_2_1_2 and M_Map toolboxes, and the architecture of the workflow is based on a MySQL database containing information about data and metadata. The applications are designed for High Frequency Radar (HFR) data management according to the European HFR node processing workflow, thus generating radial and total velocity files in netCDF format according to the European standard data and metadata model for near real time HFR current data.
+
+THIS APPLICATION IS DESIGNED FOR PROCESSING HISTORICAL DATA.
+Start and end date must be specified at lines 42-43 of the H_EU_HFR_Node_Processor.m wrapper.
 
 The database is composed by the following tables:
 - account_tb: it contains the general information about HFR providers and the HFR networks they manage.
@@ -20,15 +23,15 @@ General information for the tables network_tb and station_tb are loaded onto the
 
 All generated radial and total netCDF files are quality controlled according the the QC tests defined as standard for the European HFR node and for the data distribution on CMEMS-INSTAC and SeaDataNet platforms.
 
-The whole workflow is intended to run automatically to continuously convert and combine near real time HFR data produced by data providers. The wrapper EU_HFR_Node_Processor.m sets the provider username and launches the input and processing applications within an infinite loop.
+The whole workflow is intended to run automatically to convert and combine historical HFR data produced by data providers. The wrapper H_EU_HFR_Node_Processor.m sets the network ID, the starting and ending time and launches the input and processing applications within an infinite loop.
 
-The applications inputRUV2DB.m and inputCradAScii2DB.m load radial files information onto the database in table radial_input_tb.
+The applications H_inputRUV2DB.m and H_inputCradAScii2DB.m load radial files information onto the database in table radial_input_tb.
 
-The applications inputTUV2DB.m and inputCurAsc2DB.m load total files information onto the database in table total_input_tb.
+The applications H_inputTUV2DB.m H_inputAscRad2DB and H_inputCurAsc2DB.m load total files information onto the database in table total_input_tb.
 
-The application HFR_Combiner.m converts Codar native .ruv files and WERA native .crad_ascii files for radial currents into the European standard data and metadata model for near real time HFR current data and combines them for generating total current files according to the European standard data and metadata model for near real time HFR current data.
+The application H_HFR_Combiner.m converts Codar native .ruv files and WERA native .crad_ascii files for radial currents into the European standard data and metadata model for near real time HFR current data and combines them for generating total current files according to the European standard data and metadata model for near real time HFR current data.
 
-The application Total_Conversion.m converts Codar native .tuv files and WERA native .cur_asc files for total currents into the European standard data and metadata model for near real time HFR current data.
+The application H_Total_Conversion.m converts Codar native .tuv files and WERA native .cur_asc and .asc files for total currents into the European standard data and metadata model for near real time HFR current data.
 
 
 The required toolboxes are:
@@ -43,7 +46,7 @@ The required toolboxes are:
 
 Author: Lorenzo Corgnati
 
-Date: November 20, 2018
+Date: November 10, 2019
 
 E-mail: lorenzo.corgnati@sp.ismar.cnr.it
 
