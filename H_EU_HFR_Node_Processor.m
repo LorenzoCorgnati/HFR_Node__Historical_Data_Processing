@@ -47,18 +47,20 @@ sqlConfig.database = 'HFR_node_db';
 %% Set HFR networks and time interval to be processe
 
 % START AND END DATES TO BE INSERTED IN THE FORMAT YYYY-MM-DD AS COMMA-SEPARATED LIST
-procStart = '2015-01-01'; % Start date included
-procEnd = '2015-01-02'; % End date excluded
+procStart = '2013-10-19, 2017-09-22'; % Start date included
+procEnd = '2013-10-20, 2017-09-24'; % End date excluded
 
 % NETWORK IDS TO BE INSERTED AS COMMA-SEPARATED LIST
-HFRnetworkID = 'HFR-GoM';
+HFRnetworkID = 'HFR-GoM, HFR-WHub';
 
 %%
 
-%% Retrieve networks IDs
+%% Retrieve networks IDs, start processing date and end processing date
 
 try
     HFRPnetworks = regexp(HFRnetworkID, '[ ,;]+', 'split');
+    procStartDate = regexp(procStart, '[ ,;]+', 'split');
+    procEndDate = regexp(procEnd, '[ ,;]+', 'split');
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
     iRDB_err = 1;
@@ -68,13 +70,22 @@ end
 
 %% Processing
 
+% Set the radial and total structure initial indices
+tBCR_idx = 0;
+tBCT_idx = 0;
+
+% Set the radial and total struvture column names
+toBeCombinedRadials_columnNames = {'filename' 'filepath' 'network_id' 'station_id' 'timestamp' 'datetime' 'reception_date' 'filesize' 'extension' 'NRT_processed_flag'};
+toBeConvertedTotals_columnNames = {'filename' 'filepath' 'network_id' 'timestamp' 'datetime' 'reception_date' 'filesize' 'extension' 'NRT_processed_flag'};
+
 for HFRPntw_idx=1:length(HFRPnetworks)
     
+    % Set the network ID to be processed
     networkID = HFRPnetworks{HFRPntw_idx};
     
     try
-        startDate = procStart{HFRPntw_idx};
-        endDate = procEnd{HFRPntw_idx};
+        startDate = procStartDate{HFRPntw_idx};
+        endDate = procEndDate{HFRPntw_idx};
         assert(datenum(startDate)<datenum(endDate), 'Start date must be previous than end date.');
     catch err
         disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
@@ -82,12 +93,11 @@ for HFRPntw_idx=1:length(HFRPnetworks)
         return
     end
     
-    
     % RADIALS COMBINATION & RADIALS AND TOTALS CONVERSION
-    H_inputRUV;
-    H_inputAscRad;
-    H_inputCradAscii;
-    H_HFRCombiner;
+        H_inputRUV;
+    %     H_inputAscRad;
+    %     H_inputCradAscii;
+        H_HFRCombiner;
     
     % TOTALS CONVERSION
     H_inputTUV;

@@ -32,10 +32,50 @@ end
 
 %%
 
-%% Retrieve networks ID managed by the HFR provider username
+%% Query the database for retrieving data from managed networks
 
+% Set and exectute the query
 try
-    HFRPnetworks = regexp(HFRnetworkID, '[ ,;]+', 'split');
+    network_selectquery = ['SELECT * FROM network_tb WHERE network_id = ''' networkID ''''];
+    network_curs = exec(conn,network_selectquery);
+    disp(['[' datestr(now) '] - - ' 'Query to network_tb table for retrieving data of the managed networks successfully executed.']);
+catch err
+    disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
+    iRDB_err = 1;
+end
+
+% Fetch data
+try
+    network_curs = fetch(network_curs);
+    network_data = network_curs.Data;
+    disp(['[' datestr(now) '] - - ' 'Data of the managed networks successfully fetched from network_tb table.']);
+catch err
+    disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
+    iRDB_err = 1;
+end
+
+% Retrieve column names
+try
+    network_columnNames = columnnames(network_curs,true);
+    disp(['[' datestr(now) '] - - ' 'Column names from network_tb table successfully retrieved.']);
+catch err
+    disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
+    iRDB_err = 1;
+end
+
+% Retrieve the number of networks
+try
+    numNetworks = rows(network_curs);
+    disp(['[' datestr(now) '] - - ' 'Number of managed networks successfully retrieved from network_tb table.']);
+catch err
+    disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
+    iRDB_err = 1;
+end
+
+% Close cursor
+try
+    close(network_curs);
+    disp(['[' datestr(now) '] - - ' 'Cursor to network_tb table successfully closed.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
     iRDB_err = 1;
@@ -43,62 +83,6 @@ end
 
 %%
 
-%% Query the database for retrieving data from managed networks
-
-if(HFRC_err==0)
-    % Set and exectute the query
-    try
-        network_selectquery = 'SELECT * FROM network_tb WHERE (network_id = ''';
-        for HFRPntw_idx=1:length(HFRPnetworks)-1
-            network_selectquery = [network_selectquery HFRPnetworks{HFRPntw_idx} ''' OR network_id = ' ''''];
-        end
-        network_selectquery = [network_selectquery HFRPnetworks{length(HFRPnetworks)} ''') AND EU_HFR_processing_flag=0'];
-        network_curs = exec(conn,network_selectquery);
-        disp(['[' datestr(now) '] - - ' 'Query to network_tb table for retrieving data of the managed networks successfully executed.']);
-    catch err
-        disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-        HFRC_err = 1;
-    end
-    
-    % Fetch data
-    try
-        network_curs = fetch(network_curs);
-        network_data = network_curs.Data;
-        disp(['[' datestr(now) '] - - ' 'Data of the managed networks successfully fetched from network_tb table.']);
-    catch err
-        disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-        HFRC_err = 1;
-    end
-    
-    % Retrieve column names
-    try
-        network_columnNames = columnnames(network_curs,true);
-        disp(['[' datestr(now) '] - - ' 'Column names from network_tb table successfully retrieved.']);
-    catch err
-        disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-        HFRC_err = 1;
-    end
-    
-    % Retrieve the number of networks
-    try
-        numNetworks = rows(network_curs);
-        disp(['[' datestr(now) '] - - ' 'Number of managed networks successfully retrieved from network_tb table.']);
-    catch err
-        disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-        HFRC_err = 1;
-    end
-    
-    % Close cursor
-    try
-        close(network_curs);
-        disp(['[' datestr(now) '] - - ' 'Cursor to network_tb table successfully closed.']);
-    catch err
-        disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-        HFRC_err = 1;
-    end
-end
-
-%%
 
 %% Scan the networks and combine the related radial files
 
@@ -116,10 +100,10 @@ try
     % Find the index of the grid resolution field
     grid_resolutionIndex = find(not(cellfun('isempty', strfind(network_columnNames, 'grid_resolution'))));
     
-    % Find the index of the of the combination search radius field
+    % Find the index of the of the output mat files folder path field
     matPathIndex = find(not(cellfun('isempty', strfind(network_columnNames, 'total_mat_folder_path'))));
     
-    % Find the index of the of the output mat files folder path field
+    % Find the index of the of the combination search radius field
     spatthreshIndex = find(not(cellfun('isempty', strfind(network_columnNames, 'combination_search_radius'))));
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);

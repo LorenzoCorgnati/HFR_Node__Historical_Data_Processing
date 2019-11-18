@@ -35,31 +35,16 @@ end
 
 %%
 
-%% Retrieve networks ID managed by the HFR provider username
-
-try
-    HFRPnetworks = regexp(HFRnetworkID, '[ ,;]+', 'split');
-catch err
-    disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    iRDB_err = 1;
-end
-
-%%
-
 %% Query the database for retrieving data from managed networks
 
 % Set and exectute the query
 try
-    network_selectquery = 'SELECT * FROM network_tb WHERE (network_id = ''';
-    for HFRPntw_idx=1:length(HFRPnetworks)-1
-        network_selectquery = [network_selectquery HFRPnetworks{HFRPntw_idx} ''' OR network_id = ' ''''];
-    end
-    network_selectquery = [network_selectquery HFRPnetworks{length(HFRPnetworks)} ''') AND EU_HFR_processing_flag=0'];
+    network_selectquery = ['SELECT * FROM network_tb WHERE network_id = ''' networkID ''''];
     network_curs = exec(conn,network_selectquery);
     disp(['[' datestr(now) '] - - ' 'Query to network_tb table for retrieving data of the managed networks successfully executed.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    iTDB_err = 1;
+    iRDB_err = 1;
 end
 
 % Fetch data
@@ -69,7 +54,7 @@ try
     disp(['[' datestr(now) '] - - ' 'Data of the managed networks successfully fetched from network_tb table.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    iTDB_err = 1;
+    iRDB_err = 1;
 end
 
 % Retrieve column names
@@ -78,7 +63,7 @@ try
     disp(['[' datestr(now) '] - - ' 'Column names from network_tb table successfully retrieved.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    iTDB_err = 1;
+    iRDB_err = 1;
 end
 
 % Retrieve the number of networks
@@ -87,7 +72,7 @@ try
     disp(['[' datestr(now) '] - - ' 'Number of managed networks successfully retrieved from network_tb table.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    iTDB_err = 1;
+    iRDB_err = 1;
 end
 
 % Close cursor
@@ -96,10 +81,11 @@ try
     disp(['[' datestr(now) '] - - ' 'Cursor to network_tb table successfully closed.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    iTDB_err = 1;
+    iRDB_err = 1;
 end
 
 %%
+
 
 %% Scan the networks, list the related total files and insert information into the database
 
@@ -111,6 +97,14 @@ try
     % Find the index of the input file path field
     inputPathIndexC = strfind(network_columnNames, 'total_input_folder_path');
     inputPathIndex = find(not(cellfun('isempty', inputPathIndexC)));
+    
+    % Find the index of the output file path field
+    outputPathIndexC = strfind(network_columnNames, 'total_HFRnetCDF_folder_path');
+    outputPathIndex = find(not(cellfun('isempty', outputPathIndexC)));
+    
+    % Find the index of the mat file path field
+    matPathIndexC = strfind(network_columnNames, 'total_mat_folder_path');
+    matPathIndex = find(not(cellfun('isempty', matPathIndexC)));
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
     iTDB_err = 1;
@@ -119,6 +113,11 @@ end
 % Scan the networks
 try
     for network_idx=1:numNetworks
+        % Override data folder paths for stations
+        network_data{network_idx,inputPathIndex} = ['../' networkID filesep 'Totals_tuv'];
+        network_data{network_idx,outputPathIndex} = ['../' networkID filesep 'Totals_nc'];
+        network_data{network_idx,matPathIndex} = ['../' networkID filesep 'Totals_mat'];
+        
         iTDB_err = 0;
         if(~isempty(network_data{network_idx,inputPathIndex}))
             % Trim heading and trailing whitespaces from folder path
@@ -131,7 +130,7 @@ try
                 disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
                 iTDB_err = 1;
             end
-            % Insert information about the tuv file into the database (if not yet present)
+            % Insert information about the tuv file into the data structure
             for tuv_idx=1:length(tuvFiles)
                 iTDB_err = 0;
                 % Retrieve the filename
@@ -167,65 +166,21 @@ try
                 
                 % Check if the current file belongs to the processing time interval
                 if((datenum(DateTime) >= startDateNum) && (datenum(DateTime) < endDateNum))
-                    % Check if the current tuv file is already present on the database
+                    
+                    % Retrieve information about the tuv file
                     try
-                        dbTotals_selectquery = ['SELECT * FROM total_input_tb WHERE datetime>=' '''' startDate ''' AND datetime<' '''' endDate ''' AND network_id = ' '''' network_data{network_idx,network_idIndex} ''' AND filename = ' '''' noFullPathName ''' ORDER BY timestamp'];
-                        dbTotals_curs = exec(conn,dbTotals_selectquery);
-                        disp(['[' datestr(now) '] - - ' 'Query to total_input_tb table for checking if ' noFullPathName ' total file is already present in the database successfully executed.']);
+                        tuvFileInfo = dir(tuvFiles(tuv_idx).name);
+                        tuvFilesize = tuvFileInfo.bytes/1024;
                     catch err
                         disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
                         iTDB_err = 1;
                     end
                     
-                    % Fetch data
-                    try
-                        dbTotals_curs = fetch(dbTotals_curs);
-                        disp(['[' datestr(now) '] - - ' 'Data about the presence of ' noFullPathName ' total file in the database successfully fetched from total_input_tb table.']);
-                    catch err
-                        disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                        iTDB_err = 1;
-                    end
+                    % Define a cell array that contains the data for insertion
+                    tBCT_idx = tBCT_idx + 1;
+                    toBeConvertedTotals_data(tBCT_idx,:) = {noFullPathName,pathstr,network_data{network_idx,network_idIndex},TimeStamp,DateTime,(datestr(now,'yyyy-mm-dd HH:MM:SS')),tuvFilesize,ext,0};
                     
-                    if(rows(dbTotals_curs) == 0)
-                        
-                        % Retrieve information about the tuv file
-                        try
-                            tuvFileInfo = dir(tuvFiles(tuv_idx).name);
-                            tuvFilesize = tuvFileInfo.bytes/1024;
-                        catch err
-                            disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                            iTDB_err = 1;
-                        end
-                        
-                        % Write tuv info in total_input_tb table
-                        try
-                            % Define a cell array containing the column names to be added
-                            addColnames = {'filename' 'filepath' 'network_id' 'timestamp' 'datetime' 'reception_date' 'filesize' 'extension' 'NRT_processed_flag'};
-                            
-                            % Define a cell array that contains the data for insertion
-                            addData = {noFullPathName,pathstr,network_data{network_idx,network_idIndex},TimeStamp,DateTime,(datestr(now,'yyyy-mm-dd HH:MM:SS')),tuvFilesize,ext,0};
-                            
-                            % Append the product data into the total_input_tb table on the database.
-                            tablename = 'total_input_tb';
-                            datainsert(conn,tablename,addColnames,addData);
-                            disp(['[' datestr(now) '] - - ' noFullPathName ' total file information successfully inserted into total_input_tb table.']);
-                        catch err
-                            disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                            iTDB_err = 1;
-                        end
-                    end
-                    
-                    % Close cursor to total_input_tb table
-                    try
-                        close(dbTotals_curs);
-                        disp(['[' datestr(now) '] - - ' 'Cursor to total_input_tb table successfully closed.']);
-                    catch err
-                        disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                        iTDB_err = 1;
-                    end
-                    clear dbRadials_curs
                 end
-                clear dbRadials_curs
             end
         end
     end

@@ -31,31 +31,16 @@ end
 
 %%
 
-%% Retrieve networks ID managed by the HFR provider username
-
-try
-    HFRPnetworks = regexp(HFRnetworkID, '[ ,;]+', 'split');
-catch err
-    disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    iRDB_err = 1;
-end
-
-%%
-
 %% Query the database for retrieving data from managed networks
 
 % Set and exectute the query
 try
-    network_selectquery = 'SELECT * FROM network_tb WHERE (network_id = ''';
-    for HFRPntw_idx=1:length(HFRPnetworks)-1
-        network_selectquery = [network_selectquery HFRPnetworks{HFRPntw_idx} ''' OR network_id = ' ''''];
-    end
-    network_selectquery = [network_selectquery HFRPnetworks{length(HFRPnetworks)} ''') AND EU_HFR_processing_flag=0'];
+    network_selectquery = ['SELECT * FROM network_tb WHERE network_id = ''' networkID ''''];
     network_curs = exec(conn,network_selectquery);
     disp(['[' datestr(now) '] - - ' 'Query to network_tb table for retrieving data of the managed networks successfully executed.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    TC_err = 1;
+    iRDB_err = 1;
 end
 
 % Fetch data
@@ -65,7 +50,7 @@ try
     disp(['[' datestr(now) '] - - ' 'Data of the managed networks successfully fetched from network_tb table.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    TC_err = 1;
+    iRDB_err = 1;
 end
 
 % Retrieve column names
@@ -74,7 +59,7 @@ try
     disp(['[' datestr(now) '] - - ' 'Column names from network_tb table successfully retrieved.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    TC_err = 1;
+    iRDB_err = 1;
 end
 
 % Retrieve the number of networks
@@ -83,7 +68,7 @@ try
     disp(['[' datestr(now) '] - - ' 'Number of managed networks successfully retrieved from network_tb table.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    TC_err = 1;
+    iRDB_err = 1;
 end
 
 % Close cursor
@@ -92,10 +77,11 @@ try
     disp(['[' datestr(now) '] - - ' 'Cursor to network_tb table successfully closed.']);
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    TC_err = 1;
+    iRDB_err = 1;
 end
 
 %%
+
 
 %% Scan the networks and convert the related total files
 

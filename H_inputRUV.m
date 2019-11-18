@@ -1,6 +1,6 @@
 %% H_inputRUV.m
 % This application lists the input ruv files pushed by the HFR data providers
-% and inserts into a proper structure the information needed for the 
+% and inserts into a proper structure the information needed for the
 % combination of Codar radial files into totals and for the generation of the
 % radial and total data files into the European standard data model.
 
@@ -28,17 +28,6 @@ endDateNum = datenum(endDate);
 try
     conn = database(sqlConfig.database,sqlConfig.user,sqlConfig.password,'Vendor','MySQL','Server',sqlConfig.host);
     disp(['[' datestr(now) '] - - ' 'Connection to database successfully established.']);
-catch err
-    disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-    iRDB_err = 1;
-end
-
-%%
-
-%% Retrieve networks ID managed by the HFR provider username
-
-try
-    HFRPnetworks = regexp(HFRnetworkID, '[ ,;]+', 'split');
 catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
     iRDB_err = 1;
@@ -94,12 +83,6 @@ catch err
     disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
     iRDB_err = 1;
 end
-
-%%
-
-%% Override data folder paths
-
-% TO BE DONE
 
 %%
 
@@ -169,6 +152,10 @@ try
             inputPathIndexC = strfind(station_columnNames, 'radial_input_folder_path');
             inputPathIndex = find(not(cellfun('isempty', inputPathIndexC)));
             
+            % Find the index of the output file path field
+            outputPathIndexC = strfind(station_columnNames, 'radial_HFRnetCDF_folder_path');
+            outputPathIndex = find(not(cellfun('isempty', outputPathIndexC)));
+            
             % Find the index of the station_id field
             station_idIndexC = strfind(station_columnNames, 'station_id');
             station_idIndex = find(not(cellfun('isempty', station_idIndexC)));
@@ -180,6 +167,10 @@ try
         % Scan the stations
         for station_idx=1:numStations
             if(~isempty(station_data{station_idx,inputPathIndex}))
+                % Override data folder paths for stations
+                station_data{station_idx,inputPathIndex} = ['../' networkID filesep 'Radials_ruv' filesep station_data{station_idx,station_idIndex}];
+                station_data{station_idx,outputPathIndex} = ['../' networkID filesep 'Radials_nc'];
+                
                 % Trim heading and trailing whitespaces from folder path
                 station_data{station_idx,inputPathIndex} = strtrim(station_data{station_idx,inputPathIndex});
                 % List the input ruv files for the current station
@@ -191,7 +182,7 @@ try
                     iRDB_err = 1;
                 end
                 
-                % Insert information about the ruv file into the database (if not yet present)
+                % Insert information about the ruv file into the data structure
                 for ruv_idx=1:length(ruvFiles)
                     iRDB_err = 0;
                     % Retrieve the filename
@@ -226,56 +217,20 @@ try
                     end
                     
                     % Check if the current file belongs to the processing time interval
-                    if((datenum(DateTime) >= startDateNum) && (datenum(DateTime) < endDateNum))                       
-                        % Check if the current ruv file is already present on the database
+                    if((datenum(DateTime) >= startDateNum) && (datenum(DateTime) < endDateNum))
+                        % Retrieve information about the ruv file
                         try
-                            dbRadials_selectquery = ['SELECT * FROM radial_input_tb WHERE datetime>=' '''' startDate ''' AND datetime<' '''' endDate ''' AND network_id = ' '''' network_data{network_idx,network_idIndex} ''' AND filename = ' '''' noFullPathName ''' ORDER BY timestamp'];
-                            dbRadials_curs = exec(conn,dbRadials_selectquery);
-                            disp(['[' datestr(now) '] - - ' 'Query to radial_input_tb table for checking if ' noFullPathName ' radial file is already present in the database successfully executed.']);
+                            ruvFileInfo = dir(ruvFiles(ruv_idx).name);
+                            ruvFilesize = ruvFileInfo.bytes/1024;
                         catch err
                             disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
                             iRDB_err = 1;
                         end
                         
-                        % Fetch data
-                        try
-                            dbRadials_curs = fetch(dbRadials_curs);
-                            disp(['[' datestr(now) '] - - ' 'Data about the presence of ' noFullPathName ' radial file in the database successfully fetched from radial_input_tb table.']);
-                        catch err
-                            disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                            iRDB_err = 1;
-                        end
+                        % Define a cell array that contains the data for insertion
+                        tBCR_idx = tBCR_idx + 1;
+                        toBeCombinedRadials_data(tBCR_idx,:) = {noFullPathName,pathstr,network_data{network_idx,network_idIndex},station_data{station_idx,station_idIndex},TimeStamp,DateTime,(datestr(now,'yyyy-mm-dd HH:MM:SS')),ruvFilesize,ext,0};
                         
-                        if(rows(dbRadials_curs) == 0)
-                            
-                            % Retrieve information about the ruv file
-                            try
-                                ruvFileInfo = dir(ruvFiles(ruv_idx).name);
-                                ruvFilesize = ruvFileInfo.bytes/1024;
-                            catch err
-                                disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                                iRDB_err = 1;
-                            end
-                            
-                            % Write ruv info in radial_input_tb table
-                            try
-                                % Define a cell array containing the column names to be added
-                                addColnames = {'filename' 'filepath' 'network_id' 'station_id' 'timestamp' 'datetime' 'reception_date' 'filesize' 'extension' 'NRT_processed_flag'};
-                                
-                                % Define a cell array that contains the data for insertion
-                                addData = {noFullPathName,pathstr,network_data{network_idx,network_idIndex},station_data{station_idx,station_idIndex},TimeStamp,DateTime,(datestr(now,'yyyy-mm-dd HH:MM:SS')),ruvFilesize,ext,0};
-                                
-                                % Append the product data into the radial_input_tb table on the database.
-                                tablename = 'radial_input_tb';
-                                datainsert(conn,tablename,addColnames,addData);
-                                disp(['[' datestr(now) '] - - ' noFullPathName ' radial file information successfully inserted into radial_input_tb table.']);
-                            catch err
-                                disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                                iRDB_err = 1;
-                            end
-                            clear dbRadials_curs
-                        end
-                        clear dbRadials_curs
                     end
                 end
             end
