@@ -1,6 +1,6 @@
-%% H_inputRUV2DB.m
+%% H_inputRUV.m
 % This application lists the input ruv files pushed by the HFR data providers
-% and insert into the HFR database the information needed for the
+% and inserts into a proper structure the information needed for the 
 % combination of Codar radial files into totals and for the generation of the
 % radial and total data files into the European standard data model.
 
@@ -16,7 +16,7 @@ warning('off', 'all');
 
 iRDB_err = 0;
 
-disp(['[' datestr(now) '] - - ' 'H_inputRUV2DB started.']);
+disp(['[' datestr(now) '] - - ' 'H_inputRUV started.']);
 
 startDateNum = datenum(startDate);
 endDateNum = datenum(endDate);
@@ -301,5 +301,5 @@ end
 %%
 
 if(iRDB_err==0)
-    disp(['[' datestr(now) '] - - ' 'H_inputRUV2DB successfully executed.']);
+    disp(['[' datestr(now) '] - - ' 'H_inputRUV successfully executed.']);
 end
