@@ -2,7 +2,7 @@
 These applications are written in Matlab language and they are based on HFR_Progs_2_1_2 and M_Map toolboxes, and the architecture of the workflow is based on a MySQL database containing information about data and metadata. The applications are designed for High Frequency Radar (HFR) data management according to the European HFR node processing workflow, thus generating radial and total velocity files in netCDF format according to the European standard data and metadata model for near real time HFR current data.
 
 THIS APPLICATION IS DESIGNED FOR PROCESSING HISTORICAL DATA. 
-This application support batch processing.
+This application supports batch processing.
 Start and end dates must be specified as comma separated list at lines 50-51 of the H_EU_HFR_Node_Processor.m wrapper.
 HFR networks to be processed must be specified as comma separated list at line 54 of the H_EU_HFR_Node_Processor.m wrapper.
 
