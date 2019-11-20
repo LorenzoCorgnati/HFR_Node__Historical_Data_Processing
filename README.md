@@ -2,33 +2,58 @@
 These applications are written in Matlab language and they are based on HFR_Progs_2_1_2 and M_Map toolboxes, and the architecture of the workflow is based on a MySQL database containing information about data and metadata. The applications are designed for High Frequency Radar (HFR) data management according to the European HFR node processing workflow, thus generating radial and total velocity files in netCDF format according to the European standard data and metadata model for near real time HFR current data.
 
 THIS APPLICATION IS DESIGNED FOR PROCESSING HISTORICAL DATA. 
+
 This application supports batch processing.
+
 Start and end dates must be specified as comma separated list at lines 50-51 of the H_EU_HFR_Node_Processor.m wrapper.
+
 HFR networks to be processed must be specified as comma separated list at line 54 of the H_EU_HFR_Node_Processor.m wrapper.
+
 
 THE INPUT DATA TO BE PROCESSED MUST BE PLACED IN A FOLDER NAMED WITH THE NETWORK ID OF THE HFR NETWORK AT THE SAME LEVEL OF THE FOLDER CONTAINING THE APPLICATION (I.E. A FOLDER ROOTWARD WITH RESPECT TO THE SCRIPT FILES). THE NETWORK-ID-NAMED FOLDER MUST HAVE THE FOLLOWING STRUCTURE:
 
 HFR_network_id
+
       |__________Radials_ruv (containing input .ruv radial files)
+      
       |               |__________station_id_1 (one per each radial station)
+      
       |               |__________station_id_2
+      
       |               |__________    ...
+      
       |               |__________station_id_n
+      
       |
+      
       |__________Radials_asc (containing input .crad_ascii and .asc radial files)
+      
       |               |__________station_id_1 (one per each radial station)
+      
       |               |__________station_id_2
+      
       |               |__________    ...
+      
       |               |__________station_id_n
+      
       |
+      
       |__________Radials_nc (containing output .nc radial files)
+      
       |
+      
       |__________Totals_tuv (containing input .tuv total files)
+      
       |
+      
       |__________Totals_asc (containing input .cur_asc and .asc total files)
+      
       |
+      
       |__________Totals_mat (containing output .mat total files)
+      
       |
+      
       |__________Totals_nc (containing output .nc total files)
 
 The database is composed by the following tables:
