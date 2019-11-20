@@ -47,11 +47,11 @@ sqlConfig.database = 'HFR_node_db';
 %% Set HFR networks and time interval to be processe
 
 % START AND END DATES TO BE INSERTED IN THE FORMAT YYYY-MM-DD AS COMMA-SEPARATED LIST
-procStart = '2013-10-19, 2017-09-22'; % Start date included
-procEnd = '2013-10-20, 2017-09-24'; % End date excluded
+procStart = '2015-01-03, 2013-10-19, 2017-09-22, 2018-06-13'; % Start date included
+procEnd = '2015-01-05, 2013-10-20, 2017-09-24, 2018-06-15'; % End date excluded
 
 % NETWORK IDS TO BE INSERTED AS COMMA-SEPARATED LIST
-HFRnetworkID = 'HFR-GoM, HFR-WHub';
+HFRnetworkID = 'HFR-GoM, HFR-GoM, HFR-WHub, HFR-IROISE';
 
 %%
 
@@ -94,16 +94,18 @@ for HFRPntw_idx=1:length(HFRPnetworks)
     end
     
     % RADIALS COMBINATION & RADIALS AND TOTALS CONVERSION
-        H_inputRUV;
-    %     H_inputAscRad;
-    %     H_inputCradAscii;
-        H_HFRCombiner;
+    H_inputRUV;
+    H_inputAscRad;
+    H_inputCradAscii;
+    H_HFRCombiner;
     
     % TOTALS CONVERSION
     H_inputTUV;
     H_inputAscTot;
     H_inputCurAsc;
     H_TotalConversion;
+    
+    clear toBeCombinedRadials_data toBeConvertedTotals_data
     
 end
 
