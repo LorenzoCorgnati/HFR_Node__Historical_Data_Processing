@@ -47,11 +47,11 @@ sqlConfig.database = 'HFR_node_db';
 %% Set HFR networks and time interval to be processe
 
 % START AND END DATES TO BE INSERTED IN THE FORMAT YYYY-MM-DD AS COMMA-SEPARATED LIST
-procStart = '2015-01-03, 2013-10-19, 2017-09-22, 2018-06-13'; % Start date included
-procEnd = '2015-01-05, 2013-10-20, 2017-09-24, 2018-06-15'; % End date excluded
+procStart = '2018-06-13, 2015-01-03, 2013-10-19, 2017-09-22'; % Start date included
+procEnd = '2018-06-15, 2015-01-04, 2013-10-20, 2017-09-23'; % End date excluded
 
 % NETWORK IDS TO BE INSERTED AS COMMA-SEPARATED LIST
-HFRnetworkID = 'HFR-GoM, HFR-GoM, HFR-WHub, HFR-IROISE';
+HFRnetworkID = 'HFR-IROISE, HFR-GoM, HFR-GoM, HFR-WHub';
 
 %%
 
@@ -70,10 +70,6 @@ end
 
 %% Processing
 
-% Set the radial and total structure initial indices
-tBCR_idx = 0;
-tBCT_idx = 0;
-
 % Set the radial and total struvture column names
 toBeCombinedRadials_columnNames = {'filename' 'filepath' 'network_id' 'station_id' 'timestamp' 'datetime' 'reception_date' 'filesize' 'extension' 'NRT_processed_flag'};
 toBeConvertedTotals_columnNames = {'filename' 'filepath' 'network_id' 'timestamp' 'datetime' 'reception_date' 'filesize' 'extension' 'NRT_processed_flag'};
@@ -82,6 +78,10 @@ for HFRPntw_idx=1:length(HFRPnetworks)
     
     % Set the network ID to be processed
     networkID = HFRPnetworks{HFRPntw_idx};
+    
+    % Set the radial and total structure initial indices
+    tBCR_idx = 0;
+    tBCT_idx = 0;
     
     try
         startDate = procStartDate{HFRPntw_idx};

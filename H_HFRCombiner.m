@@ -261,6 +261,7 @@ try
                 numToBeCombinedRadials = length(toBeCombinedRadials_data);
                 disp(['[' datestr(now) '] - - ' 'Number of the radial files from ' network_data{network_idx,network_idIndex} ' network to be combined successfully retrieved.']);
             else
+                clear Grid gridLon gridLat lonG latG lon lat
                 return
             end
         catch err

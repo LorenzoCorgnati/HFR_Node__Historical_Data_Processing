@@ -161,6 +161,7 @@ try
                 numToBeConvertedTotals = length(toBeConvertedTotals_data);
                 disp(['[' datestr(now) '] - - ' 'Number of total files from ' network_data{network_idx,network_idIndex} ' network to be converted successfully retrieved.']);
             else
+                clear outputFilename outputFilesize
                 return
             end
         catch err
@@ -210,55 +211,7 @@ try
                 disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
                 TC_err = 1;
             end
-            
-            % Update NRT_processed_flag in total_input_tb table
-            try
-                if(TC_err==0)
-                    % Find the index of the NRT_processed_flag field
-                    NRT_processed_flagIndex = find(not(cellfun('isempty', strfind(toBeConvertedTotals_columnNames, 'NRT_processed_flag'))));
-                    % Define a cell array containing the column names to be updated
-                    updateColnames = {'NRT_processed_flag'};
-                    
-                    % Define a cell array that contains the data for insertion
-                    updateData = {1};
-                    
-                    % Update the total_input_tb table on the database
-                    tablename = 'total_input_tb';
-                    whereclause = ['WHERE filename = ' '''' toBeConvertedTotals_data{toBeConverted_idx,filenameIndex} ''''];
-                    update(conn,tablename,updateColnames,updateData,whereclause);
-                    disp(['[' datestr(now) '] - - ' 'total_input_tb table successfully updated with NRT processed flag for timestamp ' toBeConvertedTotals_data{toBeConverted_idx,timestampIndex} '.']);
-                end
-            catch err
-                disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                TC_err = 1;
-            end
-            
-            % Insert converted total info in total_HFRnetCDF_tb table
-            try
-                if((TC_err==0) && (exist('outputFilename','var') ~= 0))
-                    % Delete the eventually present entry with the same name from the database
-                    total_deletequery = ['DELETE FROM total_HFRnetCDF_tb WHERE filename = ' '''' outputFilename ''''];
-                    total_deletecurs = exec(conn,total_deletequery);
-                    
-                    % Evaluate datetime from Time Stamp
-                    [t2d_err,DateTime] = timestamp2datetime(toBeConvertedTotals_data{toBeConverted_idx,timestampIndex});
-                    
-                    % Define a cell array containing the column names to be added
-                    addColnames = {'filename' 'network_id' 'timestamp' 'datetime' 'creation_date' 'filesize' 'input_filename' 'check_flag'};
-                    
-                    % Define a cell array that contains the data for insertion
-                    addData = {outputFilename,network_data{network_idx,network_idIndex},toBeConvertedTotals_data{toBeConverted_idx,timestampIndex},DateTime,(datestr(now,'yyyy-mm-dd HH:MM:SS')),outputFilesize,toBeConvertedTotals_data{toBeConverted_idx,filenameIndex},0};
-                    
-                    % Append the product data into the total_HFRnetCDF_tb table on the database.
-                    tablename = 'total_HFRnetCDF_tb';
-                    datainsert(conn,tablename,addColnames,addData);
-                    disp(['[' datestr(now) '] - - ' outputFilename 'total file information successfully inserted into total_HFRnetCDF_tb table.']);
-                end
-            catch err
-                disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                TC_err = 1;
-            end
-            
+                       
             clear outputFilename outputFilesize;
             
         end
