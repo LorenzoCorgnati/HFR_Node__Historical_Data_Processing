@@ -170,7 +170,7 @@ try
         for station_idx=1:numStations
             if(~isempty(station_data{station_idx,inputPathIndex}))
                 % Override data folder paths for stations
-                station_data{station_idx,inputPathIndex} = ['../' networkID filesep 'Radials_crad' filesep station_data{station_idx,station_idIndex}];
+                station_data{station_idx,inputPathIndex} = ['../' networkID filesep 'Radials_asc' filesep station_data{station_idx,station_idIndex}];
                 station_data{station_idx,outputPathIndex} = ['../' networkID filesep 'Radials_nc'];
                 
                 % Trim heading and trailing whitespaces from folder path

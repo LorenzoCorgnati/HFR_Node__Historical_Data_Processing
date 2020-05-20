@@ -331,7 +331,7 @@ try
                                 clear ruvRad
                             end
                         elseif(strcmp(toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),extensionIndex}, '.crad_ascii')) % WERA data
-                            % TO BE DONE
+                            % NOTHING TO DO
                         end
                     catch err
                         display(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
@@ -351,13 +351,14 @@ try
                             elseif (strcmp(toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),extensionIndex}, '.mat')) % MetNo data
                                 % v2.1.2
                                 [R2C_err,network_data(network_idx,:),station_data(toBeCombinedStationIndex,:),radOutputFilename,radOutputFilesize,station_tbUpdateFlag] = mat2netCDF_v33(RADIAL(ruv_idx),network_data(network_idx,:),network_columnNames,station_data(toBeCombinedStationIndex,:),station_columnNames,toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),timeStampIndex});
-                                % LINES BELOW TO BE COMMENTED WHEN THE WERA FILE CONVERTER IS RUNNING
                                 disp(['[' datestr(now) '] - - ' radOutputFilename ' radial netCDF v2.1.2 file successfully created and stored.']);
                                 contrSitesIndices(ruv_idx) = toBeCombinedStationIndex;
-                            elseif (strcmp(toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),extensionIndex}, 'crad_ascii')) % WERA data
-                                % TO BE DONE -- UNCOMMENT LINES BELOW WHEN DONE
-                                %                                 disp(['[' datestr(now) '] - - ' radOutputFilename ' radial netCDF v2.1 file successfully created and stored.']);
-                                %                                 contrSitesIndices(ruv_idx) = toBeCombinedStationIndex;
+                            elseif (strcmp(toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),extensionIndex}, '.crad_ascii')) % WERA data
+                                [R2C_err,network_data(network_idx,:),radOutputFilename,radOutputFilesize] = cradAscii2netCDF_v33(radFiles{ruv_idx},network_data(network_idx,:),network_columnNames,station_data(toBeCombinedStationIndex,:),station_columnNames,toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),timeStampIndex});
+                                disp(['[' datestr(now) '] - - ' radOutputFilename ' radial netCDF v2.1.2 file successfully created and stored.']);
+                                contrSitesIndices(ruv_idx) = toBeCombinedStationIndex;
+                                station_tbUpdateFlag = 0; % WERA radial files do not contain information about calibration
+                                numActiveStations = length(toBeCombinedRadialIndices); % WERA radials are not combined
                             end
                         catch err
                             display(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
@@ -406,24 +407,21 @@ try
                         if (strcmp(extensions, '.ruv')) % Codar data
                             % v2.1.2
                             [T2C_err,network_data(network_idx,:),station_data(contrSitesIndices,:),totOutputFilename,totOutputFilesize] = tot2netCDF_v33(TUVmask,network_data(network_idx,:),network_columnNames,station_data(contrSitesIndices,:),station_columnNames,toBeCombinedRadials_data{radial_idx,timeStampIndex},station_data);
-                            % LINE BELOW TO BE COMMENTED WHEN THE WERA FILE CONVERTER IS RUNNING
                             disp(['[' datestr(now) '] - - ' totOutputFilename ' total netCDF v2.1.2 file successfully created and stored.']);
                         elseif (strcmp(toBeCombinedRadials_data{toBeCombinedStationIndex,extensionIndex}, 'crad_ascii')) % WERA data
-                            % TO BE DONE
-                        end
-                        %                         % LINE BELOW TO BE UNCOMMENTED WHEN THE WERA FILE CONCERTER IS RUNNING
-                        %                         disp(['[' datestr(now) '] - - ' totOutputFilename ' total netCDF v2.1 file successfully created and stored.']);
-                        
-                        % Update NRT_processed_flag in the local radial table
-                        try
-                            if(HFRC_err==0)
-                                toBeCombinedRadials_data(toBeCombinedRadialIndices,NRT_processed_flagIndex)={1};
-                            end
-                        catch err
-                            disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                            HFRC_err = 1;
+                            % NOTHING TO DO
                         end
                         
+                    end
+                    
+                    % Update NRT_processed_flag in the local radial table
+                    try
+                        if(HFRC_err==0)
+                            toBeCombinedRadials_data(toBeCombinedRadialIndices,NRT_processed_flagIndex)={1};
+                        end
+                    catch err
+                        disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
+                        HFRC_err = 1;
                     end
                     
                     clear radFiles RADIAL contrSitesIndices TUV TUVgrid TUVmask radOutputFilename totOutputFilename;

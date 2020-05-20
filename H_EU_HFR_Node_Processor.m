@@ -1,6 +1,6 @@
 %% H_EU_HFR_Node_Processor.m
-% This wrapper launches the scripts for inserting into the HFR database
-% the information about radial and totala files (both Codar and WERA) and
+% This wrapper launches the scripts for reading the information about 
+% radial and total files (both Codar and WERA) from the HFR database and
 % for combining radials into totals and converting radials and totals to
 % netCDF files according to the European standard data model.
 
@@ -47,11 +47,11 @@ sqlConfig.database = 'HFR_node_db';
 %% Set HFR networks and time interval to be processe
 
 % START AND END DATES TO BE INSERTED IN THE FORMAT YYYY-MM-DD AS COMMA-SEPARATED LIST
-procStart = '2018-06-13, 2015-01-03, 2013-10-19, 2017-09-22'; % Start date included
-procEnd = '2018-06-15, 2015-01-04, 2013-10-20, 2017-09-23'; % End date excluded
+procStart = '2020-05-13, 2020-01-10'; % Start date included
+procEnd = '2020-05-14, 2020-01-21'; % End date excluded
 
 % NETWORK IDS TO BE INSERTED AS COMMA-SEPARATED LIST
-HFRnetworkID = 'HFR-IROISE, HFR-GoM, HFR-GoM, HFR-WHub';
+HFRnetworkID = 'HFR-COSYNA, HFR-Ibiza';
 
 %%
 
@@ -95,7 +95,7 @@ for HFRPntw_idx=1:length(HFRPnetworks)
     
     % RADIALS COMBINATION & RADIALS AND TOTALS CONVERSION
     H_inputRUV;
-    H_inputAscRad;
+%     H_inputAscRad;
     H_inputCradAscii;
     H_HFRCombiner;
     
