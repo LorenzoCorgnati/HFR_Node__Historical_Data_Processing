@@ -1,4 +1,4 @@
-%% H_TotalConversion_main.m
+%% H_TotalConversion.m
 % This application reads the HFR database for collecting information about
 % the total data files to be converted into the European standard data
 % model and calls the conversion functions.
@@ -155,65 +155,91 @@ try
             TC_err = 1;
         end
         
-        % Retrieve the number of totals to be converted for the current network
-        try
-            if(exist('toBeConvertedTotals_data','var')==1)
-                numToBeConvertedTotals = length(toBeConvertedTotals_data);
-                disp(['[' datestr(now) '] - - ' 'Number of total files from ' network_data{network_idx,network_idIndex} ' network to be converted successfully retrieved.']);
-            else
-                clear outputFilename outputFilesize
-                return
-            end
-        catch err
-            disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-            TC_err = 1;
-        end
-        
-        try
-            % Find the index of the filename field
-            filenameIndexC = strfind(toBeConvertedTotals_columnNames, 'filename');
-            filenameIndex = find(not(cellfun('isempty', filenameIndexC)));
+        % Process US HFR networks
+        if(contains(network_data{1,network_idIndex},'HFR-US'))
+            % Read time indices to be converted via OpenDAP
+            [TC_err, UStoBeConvertedIndices] = H_USreadTimeIndices(startDate,endDate,network_data(1,:),network_columnNames);
             
-            % Find the index of the filepath field
-            filepathIndexC = strfind(toBeConvertedTotals_columnNames, 'filepath');
-            filepathIndex = find(not(cellfun('isempty', filepathIndexC)));
-            
-            % Find the index of the extension field
-            extensionIndexC = strfind(toBeConvertedTotals_columnNames, 'extension');
-            extensionIndex = find(not(cellfun('isempty', extensionIndexC)));
-            
-            % Find the index of the timestamp field
-            timestampIndexC = strfind(toBeConvertedTotals_columnNames, 'timestamp');
-            timestampIndex = find(not(cellfun('isempty', timestampIndexC)));
-        catch err
-            disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-            TC_err = 1;
-        end
-        
-        % Scan the tuv files to be converted
-        for toBeConverted_idx=1:numToBeConvertedTotals
-            TC_err = 0;
-            try
-                if (strcmp(toBeConvertedTotals_data{toBeConverted_idx,extensionIndex}, '.tuv')) % Codar data
-                    % v2.1.2
-                    [TC_err, network_data(network_idx,:), outputFilename, outputFilesize] = tuv2netCDF_v33([toBeConvertedTotals_data{toBeConverted_idx,filepathIndex} filesep toBeConvertedTotals_data{toBeConverted_idx,filenameIndex}],toBeConvertedTotals_data{toBeConverted_idx,timestampIndex},network_data(network_idx,:),network_columnNames,station_data,station_columnNames);
-                elseif (strcmp(toBeConvertedTotals_data{toBeConverted_idx,extensionIndex}, '.cur_asc')) % WERA data
-                    % v2.1.2
-                    [TC_err, network_data(network_idx,:), outputFilename, outputFilesize] = curAsc2netCDF_v33([toBeConvertedTotals_data{toBeConverted_idx,filepathIndex} filesep toBeConvertedTotals_data{toBeConverted_idx,filenameIndex}],toBeConvertedTotals_data{toBeConverted_idx,timestampIndex},network_data(network_idx,:),network_columnNames,station_data,station_columnNames);
-                elseif (strcmp(toBeConvertedTotals_data{toBeConverted_idx,extensionIndex}, '.asc')) % WERA data
-                    % v2.1.2
-                    [TC_err, network_data(network_idx,:), outputFilename, outputFilesize] = ascTot2netCDF_v33([toBeConvertedTotals_data{toBeConverted_idx,filepathIndex} filesep toBeConvertedTotals_data{toBeConverted_idx,filenameIndex}],toBeConvertedTotals_data{toBeConverted_idx,timestampIndex},network_data(network_idx,:),network_columnNames,station_data,station_columnNames);
-                end
+            % Convert files
+            for UtBC_idx=1:length(UStoBeConvertedIndices)
+                % Read data via OpenDAP
+                [TC_err, OpenDAPncData] = H_USreadOpenDAP(UStoBeConvertedIndices(UtBC_idx),network_data(1,:),network_columnNames);
                 if(TC_err==0)
-                    disp(['[' datestr(now) '] - - ' outputFilename ' total netCDF v2.1.2 file successfully created and stored.']);
+                    disp(['[' datestr(now) '] - - ' network_data{1,network_idIndex} ' data successfully read via OpenDAP.']);
+                    % v2.1.2
+                    [TC_err, network_data(1,:), outputFilename,outputFilesize] = US2netCDF_v33(OpenDAPncData,1,network_data(1,:),network_columnNames,station_data,station_columnNames);
+                    if(TC_err==0)
+                        disp(['[' datestr(now) '] - - ' outputFilename ' total netCDF v2.1.2 file successfully created and stored.']);
+                    end
+                    
+                    clear outputFilename outputFilesize OpenDAPncData;
+                    
+                else
+                    disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> Something went wrong in reading ' network_data{1,network_idIndex} ' data via OpenDAP.']);
+                end
+            end
+            % Process networks having standard input files
+        else
+            % Retrieve the number of totals to be converted for the current network
+            try
+                if(exist('toBeConvertedTotals_data','var')==1)
+                    numToBeConvertedTotals = length(toBeConvertedTotals_data);
+                    disp(['[' datestr(now) '] - - ' 'Number of total files from ' network_data{network_idx,network_idIndex} ' network to be converted successfully retrieved.']);
+                else
+                    clear outputFilename outputFilesize
+                    return
                 end
             catch err
                 disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
                 TC_err = 1;
             end
-                       
-            clear outputFilename outputFilesize;
             
+            try
+                % Find the index of the filename field
+                filenameIndexC = strfind(toBeConvertedTotals_columnNames, 'filename');
+                filenameIndex = find(not(cellfun('isempty', filenameIndexC)));
+                
+                % Find the index of the filepath field
+                filepathIndexC = strfind(toBeConvertedTotals_columnNames, 'filepath');
+                filepathIndex = find(not(cellfun('isempty', filepathIndexC)));
+                
+                % Find the index of the extension field
+                extensionIndexC = strfind(toBeConvertedTotals_columnNames, 'extension');
+                extensionIndex = find(not(cellfun('isempty', extensionIndexC)));
+                
+                % Find the index of the timestamp field
+                timestampIndexC = strfind(toBeConvertedTotals_columnNames, 'timestamp');
+                timestampIndex = find(not(cellfun('isempty', timestampIndexC)));
+            catch err
+                disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
+                TC_err = 1;
+            end
+            
+            % Scan the tuv files to be converted
+            for toBeConverted_idx=1:numToBeConvertedTotals
+                TC_err = 0;
+                try
+                    if (strcmp(toBeConvertedTotals_data{toBeConverted_idx,extensionIndex}, '.tuv')) % Codar data
+                        % v2.1.2
+                        [TC_err, network_data(network_idx,:), outputFilename, outputFilesize] = tuv2netCDF_v33([toBeConvertedTotals_data{toBeConverted_idx,filepathIndex} filesep toBeConvertedTotals_data{toBeConverted_idx,filenameIndex}],toBeConvertedTotals_data{toBeConverted_idx,timestampIndex},network_data(network_idx,:),network_columnNames,station_data,station_columnNames);
+                    elseif (strcmp(toBeConvertedTotals_data{toBeConverted_idx,extensionIndex}, '.cur_asc')) % WERA data
+                        % v2.1.2
+                        [TC_err, network_data(network_idx,:), outputFilename, outputFilesize] = curAsc2netCDF_v33([toBeConvertedTotals_data{toBeConverted_idx,filepathIndex} filesep toBeConvertedTotals_data{toBeConverted_idx,filenameIndex}],toBeConvertedTotals_data{toBeConverted_idx,timestampIndex},network_data(network_idx,:),network_columnNames,station_data,station_columnNames);
+                    elseif (strcmp(toBeConvertedTotals_data{toBeConverted_idx,extensionIndex}, '.asc')) % WERA data
+                        % v2.1.2
+                        [TC_err, network_data(network_idx,:), outputFilename, outputFilesize] = ascTot2netCDF_v33([toBeConvertedTotals_data{toBeConverted_idx,filepathIndex} filesep toBeConvertedTotals_data{toBeConverted_idx,filenameIndex}],toBeConvertedTotals_data{toBeConverted_idx,timestampIndex},network_data(network_idx,:),network_columnNames,station_data,station_columnNames);
+                    end
+                    if(TC_err==0)
+                        disp(['[' datestr(now) '] - - ' outputFilename ' total netCDF v2.1.2 file successfully created and stored.']);
+                    end
+                catch err
+                    disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
+                    TC_err = 1;
+                end
+                
+                clear outputFilename outputFilesize;
+                
+            end
         end
     end
 catch err

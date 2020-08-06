@@ -47,11 +47,11 @@ sqlConfig.database = 'HFR_node_db';
 %% Set HFR networks and time interval to be processe
 
 % START AND END DATES TO BE INSERTED IN THE FORMAT YYYY-MM-DD AS COMMA-SEPARATED LIST
-procStart = '2015-06-22'; % Start date included
-procEnd = '2015-06-24'; % End date excluded
+procStart = '2013-01-01'; % Start date included
+procEnd = '2013-03-31'; % End date excluded
 
 % NETWORK IDS TO BE INSERTED AS COMMA-SEPARATED LIST
-HFRnetworkID = 'HFR-Galicia';
+HFRnetworkID = 'HFR-US-EastGulfCoast';
 
 %%
 
@@ -70,7 +70,7 @@ end
 
 %% Processing
 
-% Set the radial and total struvture column names
+% Set the radial and total structure column names
 toBeCombinedRadials_columnNames = {'filename' 'filepath' 'network_id' 'station_id' 'timestamp' 'datetime' 'reception_date' 'filesize' 'extension' 'NRT_processed_flag'};
 toBeConvertedTotals_columnNames = {'filename' 'filepath' 'network_id' 'timestamp' 'datetime' 'reception_date' 'filesize' 'extension' 'NRT_processed_flag'};
 
