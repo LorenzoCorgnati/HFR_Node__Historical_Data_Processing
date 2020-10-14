@@ -192,6 +192,7 @@ try
                     noFullPathName=[name ext];
                     % Retrieve information about the crad_ascii file
                     try
+                        disp(['Processing filename: ' cradFiles(crad_idx).name]);
                         % Read the timestamp from the header
                         [dateY, dateM, dateD, timeH, timeM, timeS] = textread(cradFiles(crad_idx).name, '%4d %*0c %2d %*0c %2d %*0c %2d %*0c %2d %*0c %2d',1, 'headerlines',3);
                         TimeStampVec = [dateY dateM dateD timeH timeM timeS];

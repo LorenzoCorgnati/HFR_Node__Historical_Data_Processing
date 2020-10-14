@@ -183,7 +183,7 @@ try
             % Retrieve the number of totals to be converted for the current network
             try
                 if(exist('toBeConvertedTotals_data','var')==1)
-                    numToBeConvertedTotals = length(toBeConvertedTotals_data);
+                    numToBeConvertedTotals = size(toBeConvertedTotals_data,1);
                     disp(['[' datestr(now) '] - - ' 'Number of total files from ' network_data{network_idx,network_idIndex} ' network to be converted successfully retrieved.']);
                 else
                     clear outputFilename outputFilesize

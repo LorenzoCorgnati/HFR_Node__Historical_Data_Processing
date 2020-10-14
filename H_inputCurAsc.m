@@ -139,6 +139,8 @@ try
                 noFullPathName=[name ext];
                 % Retrieve information about the cur_asc file
                 try
+                    disp(['Processing filename: ' ascFiles(asc_idx).name]);
+                    % Read the timestamp from the header
                     [date,time] = textread(ascFiles(asc_idx).name, '%11c %*0c %5c',1, 'headerlines',1);
                     TimeStampVec = datevec([date ' ' time]);
                     TimeStamp = [num2str(TimeStampVec(1)) ' ' num2str(TimeStampVec(2),'%02d') ' ' num2str(TimeStampVec(3),'%02d') ' ' num2str(TimeStampVec(4),'%02d') ' ' num2str(TimeStampVec(5),'%02d') ' ' num2str(TimeStampVec(6),'%02d')];

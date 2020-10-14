@@ -258,7 +258,7 @@ try
         % Retrieve the number of radials to be combined
         try
             if(exist('toBeCombinedRadials_data','var')==1)
-                numToBeCombinedRadials = length(toBeCombinedRadials_data);
+                numToBeCombinedRadials = size(toBeCombinedRadials_data,1);
                 disp(['[' datestr(now) '] - - ' 'Number of the radial files from ' network_data{network_idx,network_idIndex} ' network to be combined successfully retrieved.']);
             else
                 clear Grid gridLon gridLat lonG latG lon lat
