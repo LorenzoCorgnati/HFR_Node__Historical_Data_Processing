@@ -47,11 +47,11 @@ sqlConfig.database = 'HFR_node_db';
 %% Set HFR networks and time interval to be processe
 
 % START AND END DATES TO BE INSERTED IN THE FORMAT YYYY-MM-DD AS COMMA-SEPARATED LIST
-procStart = '2015-06-01, 2020-10-01, 2020-10-01'; % Start date included
-procEnd = '2015-06-24, 2020-10-31, 2020-10-31'; % End date excluded
+procStart = '2020-10-01'; % Start date included
+procEnd = '2020-11-01'; % End date excluded
 
 % NETWORK IDS TO BE INSERTED AS COMMA-SEPARATED LIST
-HFRnetworkID = 'HFR-Galicia, HFR-COSYNA, HFR-TirLig';
+HFRnetworkID = 'HFR-TirLig_TEST';
 
 %%
 

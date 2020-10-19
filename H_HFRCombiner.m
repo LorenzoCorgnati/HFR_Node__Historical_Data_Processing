@@ -119,9 +119,9 @@ try
         matPathIndexC = strfind(network_columnNames, 'total_mat_folder_path');
         matPathIndex = find(not(cellfun('isempty', matPathIndexC)));
         
-        % Override data folder paths for stations
-        network_data{network_idx,ToutputPathIndex} = ['../' networkID filesep 'Totals_nc'];
-        network_data{network_idx,matPathIndex} = ['../' networkID filesep 'Totals_mat'];
+%         % Override data folder paths for stations
+%         network_data{network_idx,ToutputPathIndex} = ['../' networkID filesep 'Totals_nc'];
+%         network_data{network_idx,matPathIndex} = ['../' networkID filesep 'Totals_mat'];
         
         % Build the regular LonLat grid given the geographical boundaries and the grid resolution for the radial combination into total
         [gridLon, gridLat] = LonLat_grid([network_data{network_idx,geospatial_lon_minIndex},network_data{network_idx,geospatial_lat_minIndex}], [network_data{network_idx,geospatial_lon_maxIndex},network_data{network_idx,geospatial_lat_maxIndex}], network_data{network_idx,grid_resolutionIndex}, 'km');
@@ -229,15 +229,15 @@ try
             HFRC_err = 1;
         end
         
-        % Override data folder paths for stations
-        try
-            for station_idx=1:numStations
-                station_data{station_idx,RoutputPathIndex} = ['../' networkID filesep 'Radials_nc'];
-            end
-        catch err
-            disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-            HFRC_err = 1;
-        end
+%         % Override data folder paths for stations
+%         try
+%             for station_idx=1:numStations
+%                 station_data{station_idx,RoutputPathIndex} = ['../' networkID filesep 'Radials_nc'];
+%             end
+%         catch err
+%             disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
+%             HFRC_err = 1;
+%         end
         
         % Retrieve the number of operational stations
         try
