@@ -159,7 +159,12 @@ try
         
         % Retrieve the stations belonging to the current network
         try
-            station_selectquery = ['SELECT * FROM station_tb WHERE network_id = ' '''' network_data{network_idx,network_idIndex} ''''];
+            % Manage the case of the ISMAR-LaMMA integrated network (HFR-WesternItaly)
+            if(strcmp(network_data{network_idx,network_idIndex},'HFR-WesternItaly'))
+                station_selectquery = ['SELECT * FROM station_tb WHERE network_id = ' '''HFR-TirLig'' OR network_id = ' '''HFR-LaMMA'''];
+            else
+                station_selectquery = ['SELECT * FROM station_tb WHERE network_id = ' '''' network_data{network_idx,network_idIndex} ''''];
+            end
             station_curs = exec(conn,station_selectquery);
             disp(['[' datestr(now) '] - - ' 'Query to station_tb table for retrieving the stations of the ' network_data{network_idx,network_idIndex} ' network successfully executed.']);
         catch err
@@ -291,12 +296,7 @@ try
             extensionIndex = find(not(cellfun('isempty', extensionIndexC)));
             
             % Find the index of the NRT_processed_flag field
-            if(strcmp(networkData{1,network_idIndex},'HFR-WesternItaly'))
-                NRT_processed_flagIndex = find(not(cellfun('isempty', strfind(toBeCombinedRadials_columnNames, 'NRT_processed_flag_integrated_network'))));
-            else
-                NRT_processed_flagIndex = strmatch('NRT_processed_flag',toBeCombinedRadials_columnNames,'exact');
-                %                 NRT_processed_flagIndex = find(not(cellfun('isempty', strfind(toBeCombinedRadials_columnNames, 'NRT_processed_flag'))));
-            end
+            NRT_processed_flagIndex = strmatch('NRT_processed_flag',toBeCombinedRadials_columnNames,'exact');
         catch err
             disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
             HFRC_err = 1;
@@ -348,10 +348,13 @@ try
                         toBeCombinedStationIndex = find(not(cellfun('isempty', toBeCombinedStationIndexC)));
                         try
                             if (strcmp(toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),extensionIndex}, '.ruv')) % Codar data
-                                % v2.2
-                                [R2C_err,network_data(network_idx,:),station_data(toBeCombinedStationIndex,:),radOutputFilename,radOutputFilesize,station_tbUpdateFlag] = ruv2netCDF_v22(RADIAL(ruv_idx),network_data(network_idx,:),network_columnNames,station_data(toBeCombinedStationIndex,:),station_columnNames,toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),timeStampIndex});
-                                disp(['[' datestr(now) '] - - ' radOutputFilename ' radial netCDF v2.2 file successfully created and stored.']);
-                                contrSitesIndices(ruv_idx) = toBeCombinedStationIndex;
+                                if(~strcmp(network_data{1,network_idIndex},'HFR-WesternItaly'))
+                                    % v2.2
+                                    [R2C_err,network_data(network_idx,:),station_data(toBeCombinedStationIndex,:),radOutputFilename,radOutputFilesize,station_tbUpdateFlag] = ruv2netCDF_v22(RADIAL(ruv_idx),network_data(network_idx,:),network_columnNames,station_data(toBeCombinedStationIndex,:),station_columnNames,toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),timeStampIndex});
+                                    disp(['[' datestr(now) '] - - ' radOutputFilename ' radial netCDF v2.2 file successfully created and stored.']);
+                                else
+                                    station_tbUpdateFlag = 0;
+                                end
                                 %                             elseif (strcmp(toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),extensionIndex}, '.mat')) % MetNo data
                                 %                                 % v2.2
                                 %                                 [R2C_err,network_data(network_idx,:),station_data(toBeCombinedStationIndex,:),radOutputFilename,radOutputFilesize,station_tbUpdateFlag] = mat2netCDF_v22(RADIAL(ruv_idx),network_data(network_idx,:),network_columnNames,station_data(toBeCombinedStationIndex,:),station_columnNames,toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),timeStampIndex});
@@ -360,10 +363,10 @@ try
                             elseif (strcmp(toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),extensionIndex}, '.crad_ascii')) % WERA data
                                 [R2C_err,network_data(network_idx,:),radOutputFilename,radOutputFilesize] = cradAscii2netCDF_v22(radFiles{ruv_idx},network_data(network_idx,:),network_columnNames,station_data(toBeCombinedStationIndex,:),station_columnNames,toBeCombinedRadials_data{toBeCombinedRadialIndices(indices_idx),timeStampIndex});
                                 disp(['[' datestr(now) '] - - ' radOutputFilename ' radial netCDF v2.2 file successfully created and stored.']);
-                                contrSitesIndices(ruv_idx) = toBeCombinedStationIndex;
                                 station_tbUpdateFlag = 0; % WERA radial files do not contain information about calibration
                                 numActiveStations = length(toBeCombinedRadialIndices); % WERA radials are not combined
                             end
+                            contrSitesIndices(ruv_idx) = toBeCombinedStationIndex;
                         catch err
                             display(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
                             HFRC_err = 2;
