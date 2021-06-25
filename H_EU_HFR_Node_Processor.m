@@ -96,9 +96,9 @@ for HFRPntw_idx=1:length(HFRPnetworks)
     
     % RADIALS COMBINATION & RADIALS AND TOTALS CONVERSION
     H_inputRUV;
-%     H_inputAscRad;
-%     H_inputCradAscii;
-%     H_HFRCombiner;
+    H_inputAscRad;
+    H_inputCradAscii;
+    H_HFRCombiner;
     
     % TOTALS CONVERSION
     H_inputTUV;
