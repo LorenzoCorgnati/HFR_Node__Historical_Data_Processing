@@ -190,40 +190,28 @@ try
                     % Retrieve the filename
                     [pathstr,name,ext]=fileparts(cradFiles(crad_idx).name);
                     noFullPathName=[name ext];
-                    % Retrieve information about the crad_ascii file
-                    try
+                    % Check if the file is related to current data (and not to wave data)
+                    if(~contains(noFullPathName, 'WAV'))
+                        % Retrieve information about the crad_ascii file
                         disp(['Processing filename: ' cradFiles(crad_idx).name]);
                         % Read the timestamp from the header
                         [date,time] = textread(cradFiles(crad_idx).name, '%*15c %9c %*0c %5c',1);
                         TimeStampVec = datevec([date ' ' time]);
                         TimeStamp = [num2str(TimeStampVec(1)) ' ' num2str(TimeStampVec(2),'%02d') ' ' num2str(TimeStampVec(3),'%02d') ' ' num2str(TimeStampVec(4),'%02d') ' ' num2str(TimeStampVec(5),'%02d') ' ' num2str(TimeStampVec(6),'%02d')];
-                    catch err
-                        disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                        iCradDB_err = 1;
-                    end
-                    
-                    try
+                        
                         % Evaluate datetime from, Time Stamp
                         [t2d_err,DateTime] = timestamp2datetime(TimeStamp);
-                    catch err
-                        disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                        iCradDB_err = 1;
-                    end
-                    
-                    % Check if the current file belongs to the processing time interval
-                    if((datenum(DateTime) >= startDateNum) && (datenum(DateTime) < endDateNum))
-                        % Retrieve information about the crad_ascii file
-                        try
+                        
+                        % Check if the current file belongs to the processing time interval
+                        if((datenum(DateTime) >= startDateNum) && (datenum(DateTime) < endDateNum))
+                            % Retrieve information about the crad_ascii file
                             cradFileInfo = dir(cradFiles(crad_idx).name);
                             cradFilesize = cradFileInfo.bytes/1024;
-                        catch err
-                            disp(['[' datestr(now) '] - - ERROR in ' mfilename ' -> ' err.message]);
-                            iCradDB_err = 1;
+                            
+                            % Define a cell array that contains the data for insertion
+                            tBCR_idx = tBCR_idx + 1;
+                            toBeCombinedRadials_data(tBCR_idx,:) = {noFullPathName,pathstr,network_data{network_idx,network_idIndex},station_data{station_idx,station_idIndex},TimeStamp,DateTime,(datestr(now,'yyyy-mm-dd HH:MM:SS')),cradFilesize,ext,0};
                         end
-                        
-                        % Define a cell array that contains the data for insertion
-                        tBCR_idx = tBCR_idx + 1;
-                        toBeCombinedRadials_data(tBCR_idx,:) = {noFullPathName,pathstr,network_data{network_idx,network_idIndex},station_data{station_idx,station_idIndex},TimeStamp,DateTime,(datestr(now,'yyyy-mm-dd HH:MM:SS')),cradFilesize,ext,0};
                     end
                 end
             end
