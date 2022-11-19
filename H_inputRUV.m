@@ -102,9 +102,9 @@ try
     for network_idx=1:numNetworks
         iRDB_err = 0;
         try
-            % Manage the case of the ISMAR-LaMMA integrated network (HFR-WesternItaly)
+            % Manage the case of the ISMAR-LaMMA-ARPAS integrated network (HFR-WesternItaly)
             if(strcmp(network_data{network_idx,network_idIndex},'HFR-WesternItaly'))
-                station_selectquery = ['SELECT * FROM station_tb WHERE network_id = ' '''HFR-TirLig'' OR network_id = ' '''HFR-LaMMA'''];
+                station_selectquery = ['SELECT * FROM station_tb WHERE network_id = ' '''HFR-TirLig'' OR network_id = ' '''HFR-LaMMA'' OR network_id = ' '''HFR-ARPAS'''];
             else
                 station_selectquery = ['SELECT * FROM station_tb WHERE network_id = ' '''' network_data{network_idx,network_idIndex} ''''];
             end

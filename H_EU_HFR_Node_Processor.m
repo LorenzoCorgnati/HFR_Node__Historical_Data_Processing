@@ -24,8 +24,8 @@ clc
 setup_nctoolbox;
 
 % Setup JBDC driver for MySQL
-% javaaddpath('/home/lorenz/Toolboxes/Matlab_HFR_AddOn/mysql-connector-java-5.1.17.jar');
-javaaddpath('/home/radarcombine/Libraries/Matlab_HFR_AddOn/mysql-connector-java-5.1.17.jar');
+javaaddpath('/home/lorenz/Toolboxes/Matlab_HFR_AddOn/mysql-connector-java-5.1.17.jar');
+% javaaddpath('/home/radarcombine/Libraries/Matlab_HFR_AddOn/mysql-connector-java-5.1.17.jar');
 
 % Setup map colormap
 set(0,'DefaultFigureColormap',feval('jet'));
@@ -36,20 +36,20 @@ disp(['[' datestr(now) '] - - ' 'H_EU_HFR_Node_Processor started.']);
 
 %%
 
-%% Set database parameters NOT TO BE CHANGED
+%% Set database parameters -- INSERT DATABASE user AND password
 
-sqlConfig.user = 'HFR_lorenzo';
-sqlConfig.password = 'xWeLXHFQfvpBmDYO';
-sqlConfig.host = '150.145.136.8';
+sqlConfig.user = 'XXXXXXX';
+sqlConfig.password = 'XXXXXXXX';
+sqlConfig.host = '150.145.136.104';
 sqlConfig.database = 'HFR_node_db';
 
 %%
 
-%% Set HFR networks and time interval to be processe
+%% Set HFR networks and time interval to be processed
 
 % START AND END DATES TO BE INSERTED IN THE FORMAT YYYY-MM-DD AS COMMA-SEPARATED LIST
-procStart = '2021-04-25'; % Start date included
-procEnd = '2021-06-11'; % End date excluded
+procStart = '2022-08-31'; % Start date included
+procEnd = '2022-09-02'; % End date excluded
 
 % NETWORK IDS TO BE INSERTED AS COMMA-SEPARATED LIST
 HFRnetworkID = 'HFR-NAdr';
@@ -96,13 +96,13 @@ for HFRPntw_idx=1:length(HFRPnetworks)
     
     % RADIALS COMBINATION & RADIALS AND TOTALS CONVERSION
     H_inputRUV;
-    H_inputAscRad;
-    H_inputCradAscii;
-    H_HFRCombiner;
+%     H_inputAscRad;
+     H_inputCradAscii;
+     H_HFRCombiner;
     
     % TOTALS CONVERSION
     H_inputTUV;
-    H_inputAscTot;
+%     H_inputAscTot;
     H_inputCurAsc;
     H_TotalConversion;
     
